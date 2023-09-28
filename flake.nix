@@ -32,8 +32,8 @@
           (_: values: foldl' (a: b: a // b) { } values)
           (map eachSystem targets);
 
-      support' = target: nixpkgs: applier: accu:
-        support [ target ] accu nixpkgs (applier accu);
+      support' = targets: nixpkgs: applier: accu:
+        support target accu nixpkgs (applier accu);
 
       withUniversal = output:
         applier: accu: accu // ({ "${output}" = (accu.${output} or { }) // applier accu; });
@@ -56,22 +56,23 @@
       darwins = filter (hasSuffix "-darwin") importedSystems;
     in
     {
-      # constructors
+      # Constructors
       allLinux = support linuxes { };
       allDarwin = support darwins { };
       allSystems = support (linuxes ++ darwins) { };
 
-      # pkgs-dependent
-      withDarwin = support darwins;
-      withLinux = support linuxes;
+      # With per-system
+      withSystems = support';
+      withDarwin = support' darwins;
+      withLinux = support' linuxes;
 
-      withSystem = support';
-      withAMD64Linux = support' "x86_64-linux";
-      withAarch64Linux = support' "aarch64-linux";
-      withAMD64Darwin = support' "x86_64-darwin";
-      withAarch64Darwin = support' "aarch64-darwin";
+      withSystem = target: support' [ target ];
+      withAarch64Linux = support' [ "aarch64-linux" ];
+      withAMD64Linux = support' [ "x86_64-linux" ];
+      withAarch64Darwin = support' [ "aarch64-darwin" ];
+      withAMD64Darwin = support' [ "x86_64-darwin" ];
 
-      # re-using systems
+      # With per-system products
       inherit withNestedSystem;
       withApps = withNestedSystem "apps";
       withDevShells = withNestedSystem "devShells";
@@ -81,22 +82,22 @@
         support (findSystems accu) accu nixpkgs
           (combo: { formatter = applier combo; });
 
-      # universal attrset
+      # With universals
+      withUniversals = applier: accu: accu // (applier accu);
       inherit withUniversal;
+      withHomeManagerModules = withUniversal "homeManagerModules";
+      withNixOSModules = withUniversal "nixosModules";
       withOverlays = withUniversal "overlays";
       withSchemas = withUniversal "schemas";
-      withNixOSModules = withUniversal "nixosModules";
-      withHomeManagerModules = withUniversal "homeManagerModules";
-      withUniversals = applier: accu: accu // (applier accu);
 
-      # universal products
+      # With universals products
       inherit withNestedUniversal;
+      withHomeManagerModule = withNestedUniversal "homeManagerModules";
+      withNixOSModule = withNestedUniversal "nixosModules";
       withOverlay = withNestedUniversal "overlays";
       withSchema = withNestedUniversal "schemas";
-      withNixOSModule = withNestedUniversal "nixosModules";
-      withHomeManager = withNestedUniversal "homeManagerModules";
 
-      # helper
+      # Helpers
       map = applier: accu: applier accu;
     };
 }
