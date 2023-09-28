@@ -24,18 +24,19 @@ E.g.:
 }
 ```
 
-A minimalist example:
+A minimalist pipeless example:
 
 ```nix
 {
   inputs = whatever0;
 
-  outputs = { nixpkgs, yafas, ... }@inputs: 
-    yafas.withSystem "riscv64-linux" nixpkgs
-      (_prev: { pkgs, ... }: { packages.default = whatever2; })
-      {
-        myLibs = whatever1;
-      }
+  outputs = { nixpkgs, yafas, ... }@inputs: yafas.withAllSystems nixpkgs
+    (universals: { pkgs, ... }: with universals; {
+      packages.default = pkgs.callPackage ./some-drv.nix { inherit myLibs; }
+    })
+    rec {
+      myLibs = import ./pure-lib.nix;
+    };
 }
 ```
 
@@ -45,11 +46,18 @@ A minimalist example:
 
 We use [github.com:nix-systems/default](https://github.com/nix-systems/default) as `inputs.systems`, feel free to override it.
 
+NOTE: This does not impact `system`, `systems`, `withSystems`, and `withSystem`.
+
 ### Constructors
 
-- `allDarwin: nixpkgs -> applier -> ouputs`
-- `allLinux: nixpkgs -> applier -> ouputs`
-- `allSystems: system[] -> nixpkgs -> applier -> ouputs`
+- Recommended:
+  - `allSystems: nixpkgs -> applier -> ouputs`
+  - `systems: system[] -> nixpkgs -> applier -> ouputs`
+  - `system: system -> nixpkgs -> applier -> ouputs`
+
+- Filtered:
+  - `allDarwin: nixpkgs -> applier -> ouputs`
+  - `allLinux: nixpkgs -> applier -> ouputs`
 
 Where `applier` is the lambda `{ pkgs, system }: { package.default = pkgs.callPackage ... { }; }`.
 
@@ -68,6 +76,7 @@ Where `applier` is a map applier.
 ### With per-system
 
 - Multiple:
+  - `withAllSystems: nixpkgs -> applier -> outputs -> outputs`
   - `withSystems: system[] -> nixpkgs -> applier -> outputs -> outputs`
   - `withDarwin: nixpkgs -> applier -> outputs -> outputs`
   - `withLinux: nixpkgs -> applier -> outputs -> outputs`
