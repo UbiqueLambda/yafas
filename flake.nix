@@ -91,14 +91,18 @@
     in
     withSchemas (import ./schemas.nix flake-schemas) {
       # Constructors
+      allSystems = support importedSystems;
+      systems = support;
+      system = target: support [ target ];
+      
       allLinux = support linuxes;
       allDarwin = support darwins;
-      allSystems = support (linuxes ++ darwins);
 
       # With per-system
       withSystems = support';
       withDarwin = support' darwins;
       withLinux = support' linuxes;
+      withAllSystems = support' importedSystems;
 
       withSystem = target: support' [ target ];
       withAarch64Linux = support' [ "aarch64-linux" ];
