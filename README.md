@@ -10,9 +10,9 @@ E.g.:
 
   outputs = { nixpkgs, yafas, ... }@inputs: 
     yafas.allLinux nixpkgs
-       ({ pkgs, system }: { package.default = whatever1; })
+       ({ pkgs, system }: { packages.default = whatever1; })
        |> yafas.withAarch64Darwin nixpkgs
-         (_prev: { pkgs, ... }: { package.default = whatever2; })
+         (_prev: { pkgs, ... }: { packages.default = whatever2; })
        |> yafas.withOverlays
          (_prev: { default = whatever3; })
        |> yafas.withOverlay "cool"

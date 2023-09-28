@@ -3,7 +3,7 @@
   outputs = { self, systems }:
     let
       # lib
-      inherit (builtins) filter foldl' mapAttrs stringLength substring zipAttrsWith;
+      inherit (builtins) attrNames filter foldl' mapAttrs stringLength substring zipAttrsWith;
 
       hasSuffix = suffix: content:
         let
@@ -19,6 +19,7 @@
           eachSystem = system:
             let
               nestSystem = _: value: { ${system} = value; };
+
               systemOutputs = applier {
                 inherit system;
                 pkgs = nixpkgs.legacyPackages.${system};
@@ -39,6 +40,15 @@
 
       withNestedUniversal = output: name:
         applier: accu: accu // ({ "${output}" = (accu.${output} or { }) // { "${name}" = applier accu; }; });
+
+      findSystems = accu:
+        attrNames (accu.legacyPackages or accu.packages or accu.apps or accu.formatter or accu.devShells);
+
+      withNestedSystem = name: nixpkgs: applier: accu:
+        support (findSystems accu) accu nixpkgs
+          ({ pkgs, system }@combo: {
+            "${name}" = accu.${name}.${system} // applier accu combo;
+          });
 
       # system list
       importedSystems = import systems;
@@ -61,7 +71,18 @@
       withAMD64Darwin = support' "x86_64-darwin";
       withAarch64Darwin = support' "aarch64-darwin";
 
+      # re-using systems
+      inherit withNestedSystem;
+      withApps = withNestedSystem "apps";
+      withDevShells = withNestedSystem "devShells";
+      withLegacyPackages = withNestedSystem "legacyPackages";
+      withPackages = withNestedSystem "packages";
+      withFormatter = nixpkgs: applier: accu:
+        support (findSystems accu) accu nixpkgs
+          (combo: { formatter = applier combo; });
+
       # universal attrset
+      inherit withUniversal;
       withOverlays = withUniversal "overlays";
       withSchemas = withUniversal "schemas";
       withNixOSModules = withUniversal "nixosModules";
@@ -69,6 +90,7 @@
       withUniversals = applier: accu: accu // (applier accu);
 
       # universal products
+      inherit withNestedUniversal;
       withOverlay = withNestedUniversal "overlays";
       withSchema = withNestedUniversal "schemas";
       withNixOSModule = withNestedUniversal "nixosModules";
