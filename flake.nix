@@ -3,8 +3,13 @@
   outputs = { self, systems }:
     let
       # lib
-      inherit (builtins) attrNames filter foldl' mapAttrs stringLength substring zipAttrsWith;
+      inherit (builtins) attrNames elemAt filter foldl' head isAttrs
+        length mapAttrs stringLength substring zipAttrsWith;
 
+      update =
+        a: b: if isAttrs b then recursiveUpdate a b else b;
+
+      # nixpkgs clones
       hasSuffix = suffix: content:
         let
           lenContent = stringLength content;
@@ -13,8 +18,25 @@
         lenContent >= lenSuffix
         && substring (lenContent - lenSuffix) lenContent content == suffix;
 
+      recursiveUpdateUntil = pred: lhs: rhs:
+        let
+          f = attrPath:
+            zipAttrsWith (n: values:
+              let here = attrPath ++ [ n ]; in
+              if length values == 1
+                || pred here (elemAt values 1) (head values) then
+                head values
+              else
+                f here values
+            );
+        in
+        f [ ] [ rhs lhs ];
+
+      recursiveUpdate = lhs: rhs:
+        recursiveUpdateUntil (path: lhs: rhs: !(isAttrs lhs && isAttrs rhs)) lhs rhs;
+
       # main functions
-      support = targets: accu: nixpkgs: applier:
+      support = targets: nixpkgs: applier:
         let
           eachSystem = system:
             let
@@ -26,17 +48,24 @@
               };
             in
             mapAttrs nestSystem systemOutputs;
-
         in
         zipAttrsWith
-          (_: values: foldl' (a: b: a // b) { } values)
+          (_: values: foldl' update { } values)
           (map eachSystem targets);
 
       support' = targets: nixpkgs: applier: accu:
-        support targets accu nixpkgs (applier accu);
+        update accu (support targets nixpkgs (applier accu));
 
       withUniversal = output:
-        applier: accu: accu // ({ "${output}" = (accu.${output} or { }) // applier accu; });
+        applier: accu: accu // ({
+          "${output}" =
+            let
+              new = applier accu;
+            in
+            if isAttrs new then
+              update (accu.${output} or { }) new
+            else new;
+        });
 
       withNestedUniversal = output: name:
         applier: accu: accu // ({ "${output}" = (accu.${output} or { }) // { "${name}" = applier accu; }; });
@@ -47,7 +76,7 @@
       withNestedSystem = name: nixpkgs: applier: accu:
         support (findSystems accu) accu nixpkgs
           ({ pkgs, system }@combo: {
-            "${name}" = accu.${name}.${system} // applier accu combo;
+            "${name}" = update accu.${name}.${system} (applier accu combo);
           });
 
       # system list
@@ -57,9 +86,9 @@
     in
     {
       # Constructors
-      allLinux = support linuxes { };
-      allDarwin = support darwins { };
-      allSystems = support (linuxes ++ darwins) { };
+      allLinux = support linuxes;
+      allDarwin = support darwins;
+      allSystems = support (linuxes ++ darwins);
 
       # With per-system
       withSystems = support';
