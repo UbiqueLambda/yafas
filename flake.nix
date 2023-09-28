@@ -33,7 +33,7 @@
           (map eachSystem targets);
 
       support' = targets: nixpkgs: applier: accu:
-        support target accu nixpkgs (applier accu);
+        support targets accu nixpkgs (applier accu);
 
       withUniversal = output:
         applier: accu: accu // ({ "${output}" = (accu.${output} or { }) // applier accu; });
