@@ -1,6 +1,9 @@
 {
-  inputs = { systems.url = "github:nix-systems/default"; };
-  outputs = { self, systems }:
+  inputs = {
+    flake-schemas.url = "https://flakehub.com/f/DeterminateSystems/flake-schemas/0.1.1.tar.gz";
+    systems.url = "github:nix-systems/default";
+  };
+  outputs = { self, flake-schemas, systems }:
     let
       # lib
       inherit (builtins) attrNames elemAt filter foldl' head isAttrs
@@ -79,12 +82,14 @@
             "${name}" = update accu.${name}.${system} (applier accu combo);
           });
 
+      withSchemas = withUniversal "schemas";
+
       # system list
       importedSystems = import systems;
       linuxes = filter (hasSuffix "-linux") importedSystems;
       darwins = filter (hasSuffix "-darwin") importedSystems;
     in
-    {
+    withSchemas (import ./schemas.nix flake-schemas) {
       # Constructors
       allLinux = support linuxes;
       allDarwin = support darwins;
@@ -117,7 +122,7 @@
       withHomeManagerModules = withUniversal "homeManagerModules";
       withNixOSModules = withUniversal "nixosModules";
       withOverlays = withUniversal "overlays";
-      withSchemas = withUniversal "schemas";
+      inherit withSchemas;
 
       # With universals products
       inherit withNestedUniversal;
