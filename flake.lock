@@ -42,15 +42,16 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1695908708,
-        "narHash": "sha256-v1qteXaKckgWWmVE3y+SGczmmNZvrH52aO0y36Fea/g=",
+        "lastModified": 1695918964,
+        "narHash": "sha256-TmqK9CW5NVWFenG+Efh/2vuf+ntloCYQcHPrP7G3RfQ=",
         "owner": "UbiqueLambda",
         "repo": "yafas",
-        "rev": "7d2383c8cedb4e8bb1e0b96561606a7574a4ec29",
+        "rev": "cb195ebab375f4ce889fea63bb3999d07c4da58b",
         "type": "github"
       },
       "original": {
         "owner": "UbiqueLambda",
+        "ref": "next",
         "repo": "yafas",
         "type": "github"
       }
