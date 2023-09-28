@@ -1,0 +1,61 @@
+{
+  "nodes": {
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1695806987,
+        "narHash": "sha256-fX5kGs66NZIxCMcpAGIpxuftajHL8Hil1vjHmjjl118=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "f3dab3509afca932f3f4fd0908957709bb1c1f57",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "yafas": "yafas"
+      }
+    },
+    "systems": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "yafas": {
+      "inputs": {
+        "systems": "systems"
+      },
+      "locked": {
+        "lastModified": 1695908708,
+        "narHash": "sha256-v1qteXaKckgWWmVE3y+SGczmmNZvrH52aO0y36Fea/g=",
+        "owner": "UbiqueLambda",
+        "repo": "yafas",
+        "rev": "7d2383c8cedb4e8bb1e0b96561606a7574a4ec29",
+        "type": "github"
+      },
+      "original": {
+        "owner": "UbiqueLambda",
+        "repo": "yafas",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
