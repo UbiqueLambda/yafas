@@ -94,7 +94,7 @@
       allSystems = support importedSystems;
       systems = support;
       system = target: support [ target ];
-      
+
       allLinux = support linuxes;
       allDarwin = support darwins;
 
