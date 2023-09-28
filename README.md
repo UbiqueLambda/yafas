@@ -46,7 +46,7 @@ A minimalist pipeless example:
 
 We use [github.com:nix-systems/default](https://github.com/nix-systems/default) as `inputs.systems`, feel free to override it.
 
-NOTE: This does not impact `systems`, `withSystems`, and `withSystem`.
+NOTE: This does not impact `system`, `systems`, `withSystems`, and `withSystem`.
 
 ### Constructors
 
